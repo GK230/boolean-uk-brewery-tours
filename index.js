@@ -1,8 +1,21 @@
+const mainEl = document.querySelector("main");
+
+function unique(array) {
+  return [...new Set(array)];
+}
+
 const state = {
+  breweries: [],
+  filters: {
+    type: "",
+    cities: []
+  }
+};
 
-    breweries: [],
-    filterType: null
-
+function render() {
+  createListSection()
+  renderBreweryList()
+  createFiltersAside()
 }
 
 function getBreweriesByState(userState) {
@@ -28,7 +41,7 @@ function cleanData(data) {
     validBreweries.splice(10);
 
     state.breweries = validBreweries
-    createBreweriesList()
+    renderBreweryList()
 }
 
 
@@ -44,37 +57,9 @@ function getUserState() {
     })
 }
 
-/* <aside class="filters-section">
-  <h2>Filter By:</h2>
-  <form id="filter-by-type-form" autocompete="off">
-    <label for="filter-by-type"><h3>Type of Brewery</h3></label>
-    <select name="filter-by-type" id="filter-by-type">
-      <option value="">Select a type...</option>
-      <option value="micro">Micro</option>
-      <option value="regional">Regional</option>
-      <option value="brewpub">Brewpub</option>
-    </select>
-  </form>
-  <div class="filter-by-city-heading">
-    <h3>Cities</h3>
-    <button class="clear-all-btn">clear all</button>
-  </div>
-  <form id="filter-by-city-form">
-    <input type="checkbox" name="chardon" value="chardon" /><label for="chardon"
-      >Chardon</label
-    ><input type="checkbox" name="cincinnati" value="cincinnati" /><label
-      for="cincinnati"
-      >Cincinnati</label
-    >
-    // More checkboxes
-  </form>
-</aside> */
-
 function createFiltersAside() {
 
-    mainEl = document.querySelector("main")
-
-    asideFiltersEl = document.createElement('aside')
+  asideFiltersEl = document.createElement('aside')
     asideFiltersEl.setAttribute('class', 'filters-section')
 
     titleEl = document.createElement('h2')
@@ -84,62 +69,90 @@ function createFiltersAside() {
     formTypeEl.setAttribute('id', 'filter-by-type-form')
     formTypeEl.setAttribute('autocomplete', 'off')
     formTypeEl.addEventListener("change", function () {
-      filterTypeOfBrewery()
+      state.filters.type = selectTypeEl.value;
+      render()
     })
 
-    labelTypeEl = document.createElement('label')
-    labelTypeEl.setAttribute('for', 'filter-by-type')
+  divCityHeadingEl = document.createElement('div')
+  divCityHeadingEl.setAttribute('class', "filter-by-city-heading")
 
-    labelTitleEl = document.createElement('h3')
-    labelTitleEl.innerText = "Type of Brewery"
+  h3CityEl = document.createElement('h3')
+  h3CityEl.innerText = 'Cities'
 
-    labelTypeEl.append(labelTitleEl)
+  btnCityEl = document.createElement('button')
+  btnCityEl.setAttribute('class', "clear-all-btn")
+  btnCityEl.innerText = 'clear all'
 
-    selectTypeEl = document.createElement('select')
-    selectTypeEl.setAttribute('name', 'filter-by-type')
-    selectTypeEl.setAttribute('id', 'filter-by-type')
-    
-    optionSelectEl = document.createElement('option')
-    optionSelectEl.setAttribute('value', '')
-    optionSelectEl.innerText = 'Select a type...'
+  divCityHeadingEl.append(h3CityEl, btnCityEl)
 
-    optionMicro = document.createElement('option')
-    optionMicro.setAttribute("value", 'micro')
-    optionMicro.innerText = "Micro"
+  formCityEl = document.createElement('form')
+  formCityEl.setAttribute('id', "filter-by-city-form")
 
-    optionRegional = document.createElement('option')
-    optionRegional.setAttribute("value", 'regional')
-    optionRegional.innerText = "Regional"
+  mainEl.append(asideFiltersEl);
 
-    optionBrewPub = document.createElement('option')
-    optionBrewPub.setAttribute("value", 'brewpub')
-    optionBrewPub.innerText = "Brewpub"
+  labelTypeEl = document.createElement('label')
+  labelTypeEl.setAttribute('for', 'filter-by-type')
 
-    selectTypeEl.append(optionSelectEl, optionMicro, optionRegional, optionBrewPub)
-    
-    formTypeEl.append(labelTitleEl, selectTypeEl)
+  labelTitleEl = document.createElement('h3')
+  labelTitleEl.innerText = "Type of Brewery"
 
-    divCityHeadingEl = document.createElement('div')
-    divCityHeadingEl.setAttribute('class', "filter-by-city-heading")
+  labelTypeEl.append(labelTitleEl)
 
-    h3CityEl = document.createElement('h3')
-    h3CityEl.innerText = 'Cities'
+  selectTypeEl = document.createElement('select')
+  selectTypeEl.setAttribute('name', 'filter-by-type')
+  selectTypeEl.setAttribute('id', 'filter-by-type')
+  
+  optionSelectEl = document.createElement('option')
+  optionSelectEl.setAttribute('value', '')
+  optionSelectEl.innerText = 'Select a type...'
 
-    btnCityEl = document.createElement('button')
-    btnCityEl.setAttribute('class', "clear-all-btn")
-    btnCityEl.innerText = 'clear all'
+  optionMicro = document.createElement('option')
+  optionMicro.setAttribute("value", 'micro')
+  optionMicro.innerText = "Micro"
 
-    divCityHeadingEl.append(h3CityEl, btnCityEl)
+  optionRegional = document.createElement('option')
+  optionRegional.setAttribute("value", 'regional')
+  optionRegional.innerText = "Regional"
 
-    asideFiltersEl.append(formTypeEl, divCityHeadingEl)
+  optionBrewPub = document.createElement('option')
+  optionBrewPub.setAttribute("value", 'brewpub')
+  optionBrewPub.innerText = "Brewpub"
+
+  selectTypeEl.append(optionSelectEl, optionMicro, optionRegional, optionBrewPub)
+  
+  formTypeEl.append(labelTitleEl, selectTypeEl)
+
+  asideFiltersEl.append(formTypeEl, divCityHeadingEl, formCityEl)
+
+
+    const repeatedCities = state.breweries.map(function (brewery) {
+      return brewery.city;
+    });
+
+    const uniqueCities = unique(repeatedCities);
+    const sortedCities = uniqueCities.slice().sort();
+
+    for (const city of sortedCities) {
+
+      const formCityEl = asideFiltersEl.querySelector("#filter-by-city-form");
+
+      const inputEl = document.createElement("input");
+      inputEl.setAttribute("type", "checkbox");
+      inputEl.setAttribute("name", city);
+      inputEl.setAttribute("value", city);
+
+      const labelEl = document.createElement("label");
+      labelEl.setAttribute("for", city);
+      labelEl.innerText = city;
+
+      formCityEl.append(inputEl, labelEl);
+    }
 
     mainEl.append(asideFiltersEl)
 
 }
 
 function createListSection() {
-
-    mainEl = document.querySelector('main')
     
     h1El = document.createElement('h1')
     h1El.innerText = 'List of Breweries'
@@ -234,43 +247,38 @@ function renderBrewery(brewery) {
     return liEl
 }
 
+function renderBreweryList() {
 
+  const breweryListEl = document.querySelector(".breweries-list");
 
-function filterTypeOfBrewery() {
+  // All the breweries: state.breweries
+  // The selected filter type: state.filterByType
+  let breweriesToRender = state.breweries;
 
-  //Get user input
-  selectBreweryTypeEl = document.querySelector('#filter-by-type')
-
-  filterType = selectBreweryTypeEl.value
-  state.filterType = filterType
-
-  if (filterType !== null) {
-    const relevantBreweries = state.breweries.filter(brewery => {
-    return brewery.brewery_type === state.filterType
-  })
-  } else {
-    const relevantBreweries = state.breweries
+  if (state.filters.type !== "") {
+    // code here depends on filter type
+    breweriesToRender = breweriesToRender.filter(function (brewery) {
+      return brewery.brewery_type === state.filters.type;
+    });
   }
+
+  if (state.filters.cities.length > 0) {
+    // code here depends on filter cities
+    breweriesToRender = breweriesToRender.filter(function (brewery) {
+      return state.filters.cities.includes(brewery.city);
+    });
+  }
+
+  breweriesToRender = breweriesToRender.slice(0, 10);
+
+  for (const brewery of breweriesToRender) {
+    const liEl = renderBrewery(brewery);
+    breweryListEl.append(liEl);
+  }
+
+  mainEl.append(breweryListEl);
 }
 
-function createBreweriesList() {
-
-  articleEl = document.querySelector('article')
-
-  ulEl = document.querySelector(".breweries-list")
-  ulEl.innerHTML = ""
-
-  const relevantBreweries = filterTypeOfBrewery()
-  console.log(relevantBreweries)
-
-  for (const brewery of relevantBreweries) {
-      const liEl = renderBrewery(brewery)
-      ulEl.append(liEl)
-  }
-  articleEl.append(ulEl)
-}
-
-createFiltersAside()
-createListSection()
+render()
 getUserState()
 getBreweriesByState()
