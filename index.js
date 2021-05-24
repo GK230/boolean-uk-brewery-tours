@@ -13,14 +13,14 @@ const state = {
 };
 
 function render() {
-  createListSection()
   renderBreweryList()
   createFiltersAside()
+
 }
 
 function getBreweriesByState(userState) {
 
-    fetch(`https://api.openbrewerydb.org/breweries?by_state=${userState}`)
+    fetch(`https://api.openbrewerydb.org/breweries?by_state=${userState}&per_page=50`)
         .then(function(response) {
             return response.json()
         })
@@ -59,8 +59,9 @@ function getUserState() {
 
 function createFiltersAside() {
 
-  asideFiltersEl = document.createElement('aside')
+    asideFiltersEl = document.createElement('aside')
     asideFiltersEl.setAttribute('class', 'filters-section')
+    asideFiltersEl.innerHTML
 
     titleEl = document.createElement('h2')
     titleEl.innerText = "Filter By:"
@@ -82,6 +83,10 @@ function createFiltersAside() {
   btnCityEl = document.createElement('button')
   btnCityEl.setAttribute('class', "clear-all-btn")
   btnCityEl.innerText = 'clear all'
+  btnCityEl.addEventListener('click', function() {
+    state.filters.cities = []
+    render()
+  })
 
   divCityHeadingEl.append(h3CityEl, btnCityEl)
 
@@ -140,7 +145,21 @@ function createFiltersAside() {
       inputEl.setAttribute("type", "checkbox");
       inputEl.setAttribute("name", city);
       inputEl.setAttribute("value", city);
+      inputEl.addEventListener('change', function() {
 
+        if (this.checked) {
+          state.filters.cities.push(city)
+          render()        
+        } else {
+          const index = state.filters.cities.indexOf(city);
+          if (index) {
+            state.filters.cities.splice(index, 1);
+            render()
+          }
+        }
+        })
+    
+        
       const labelEl = document.createElement("label");
       labelEl.setAttribute("for", city);
       labelEl.innerText = city;
@@ -163,6 +182,9 @@ function createListSection() {
     formSearchEl = document.createElement('form')
     formSearchEl.setAttribute('id', "search-breweries-form")
     formSearchEl.setAttribute('autocomplete', 'off')
+    formSearchEl.addEventListener('submit', function() {
+      searchBreweries()
+    })
 
     labelSearchEl = document.createElement('label')
     labelSearchEl.setAttribute('for', "search-breweries")
@@ -250,6 +272,7 @@ function renderBrewery(brewery) {
 function renderBreweryList() {
 
   const breweryListEl = document.querySelector(".breweries-list");
+  breweryListEl.innerHTML = ""
 
   // All the breweries: state.breweries
   // The selected filter type: state.filterByType
@@ -276,8 +299,20 @@ function renderBreweryList() {
     breweryListEl.append(liEl);
   }
 
-  mainEl.append(breweryListEl);
 }
+
+function searchBreweries() {
+
+  const formSearchEl = document.querySelector("#search-breweries-form")
+  const inputSearchEl = document.querySelector("#search-breweries")
+
+  const userInput = inputSearchEl.value
+
+  const result = brewery.name.search(userInput);
+
+}
+
+createListSection()
 
 render()
 getUserState()
