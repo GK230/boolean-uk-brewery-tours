@@ -8,13 +8,15 @@ const state = {
   breweries: [],
   filters: {
     type: "",
-    cities: []
+    cities: [],
+    name
   }
 };
 
 function render() {
   renderBreweryList()
   createFiltersAside()
+
 
 }
 
@@ -61,7 +63,6 @@ function createFiltersAside() {
 
     asideFiltersEl = document.createElement('aside')
     asideFiltersEl.setAttribute('class', 'filters-section')
-    asideFiltersEl.innerHTML
 
     titleEl = document.createElement('h2')
     titleEl.innerText = "Filter By:"
@@ -145,21 +146,21 @@ function createFiltersAside() {
       inputEl.setAttribute("type", "checkbox");
       inputEl.setAttribute("name", city);
       inputEl.setAttribute("value", city);
-      inputEl.addEventListener('change', function() {
-
-        if (this.checked) {
+      inputEl.addEventListener('change', (event) => {
+        if (event.currentTarget.checked) {
+          if (state.filters.cities.includes(city) === false)
           state.filters.cities.push(city)
-          render()        
+          console.log(state.filters.cities)
         } else {
           const index = state.filters.cities.indexOf(city);
-          if (index) {
-            state.filters.cities.splice(index, 1);
-            render()
-          }
-        }
-        })
-    
-        
+              if (index) {
+                state.filters.cities.splice(index, 1);
+                console.log(state.filters.cities)
+                }
+              }  
+      })
+      
+     
       const labelEl = document.createElement("label");
       labelEl.setAttribute("for", city);
       labelEl.innerText = city;
@@ -308,7 +309,13 @@ function searchBreweries() {
 
   const userInput = inputSearchEl.value
 
-  const result = brewery.name.search(userInput);
+  for (const brewery of state.breweries) {
+    const result = brewery.name.search(userInput);
+    console.log(brewery.name)
+
+
+  }
+
 
 }
 
@@ -317,3 +324,4 @@ createListSection()
 render()
 getUserState()
 getBreweriesByState()
+
